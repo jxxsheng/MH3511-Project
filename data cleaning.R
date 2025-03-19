@@ -70,3 +70,5 @@ for (col in numeric_columns) {
   plot_hist_with_npdf(hdb_cleaned[[col]], col)
   boxplot(hdb_cleaned[[col]], main = paste("Histogram of", col), xlab = col)
 }
+
+#test
