@@ -52,20 +52,17 @@ hdb_cleaned$remaining_lease = as.numeric(hdb_cleaned$remaining_lease)
 numeric_columns = names(hdb_cleaned)[sapply(hdb_cleaned, is.numeric)]
 
 # Histogram plotting function
-par(mfrow = c(1,2))
+par(mfrow = c(2,4))
 plot_hist_with_npdf = function(x, col_name) {
-  hist(hdb_cleaned[[col_name]], main = paste("Histogram of", col_name), xlab = col_name)
+  hist_data = hist(hdb_cleaned[[col_name]], main = paste("Histogram of", col_name), xlab = col_name)
   xpt = seq(min(x), max(x), length.out = 50)
   n_den = dnorm(xpt, mean(x), sd(x))
   
   # Calculate the histogram scale factor
-  bin_width = diff(range(x)) / length(x)  
-  scale = length(x) * bin_width / sum(n_den) 
-  
-  ypt = n_den * length(x) * scale
+  bin_width = diff(hist_data$breaks[1:2])
+  ypt = n_den * length(x) * bin_width
   lines(xpt, ypt, col = "blue")
 }
-
 
 
 for (col in numeric_columns) {
