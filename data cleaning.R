@@ -24,14 +24,14 @@ unique(hdb_cleaned$town_name)
 hdb_cleaned = hdb_cleaned[hdb_cleaned$town_name != "CENTRAL AREA",]
 
 # Classify town_name by their geographical areas
-north_towns <- c("YISHUN", "SEMBAWANG", "WOODLANDS")
-south_towns <- c("BUKIT MERAH", "QUEENSTOWN", "MARINE PARADE", "BUKIT TIMAH", "CLEMENTI")
-east_towns <- c("PASIR RIS", "SENGKANG", "HOUGANG", "BEDOK", "PUNGGOL", "TAMPINES", "GEYLANG")
-west_towns <- c("CHOA CHU KANG", "JURONG WEST", "JURONG EAST", "CLEMENTI", "BUKIT BATOK", "BUKIT PANJANG")
-central_towns <- c("ANG MO KIO", "BISHAN", "TOA PAYOH", "KALLANG/WHAMPOA", "SERANGOON")
+north_towns = c("YISHUN", "SEMBAWANG", "WOODLANDS")
+south_towns = c("BUKIT MERAH", "QUEENSTOWN", "MARINE PARADE", "BUKIT TIMAH", "CLEMENTI")
+east_towns = c("PASIR RIS", "SENGKANG", "HOUGANG", "BEDOK", "PUNGGOL", "TAMPINES", "GEYLANG")
+west_towns = c("CHOA CHU KANG", "JURONG WEST", "JURONG EAST", "CLEMENTI", "BUKIT BATOK", "BUKIT PANJANG")
+central_towns = c("ANG MO KIO", "BISHAN", "TOA PAYOH", "KALLANG/WHAMPOA", "SERANGOON")
 
 # Assign a new column 'area' based on the town names
-hdb_cleaned$town_area <- ifelse(hdb_cleaned$town_name %in% north_towns, "North",
+hdb_cleaned$town_area = ifelse(hdb_cleaned$town_name %in% north_towns, "North",
                    ifelse(hdb_cleaned$town_name %in% south_towns, "South",
                           ifelse(hdb_cleaned$town_name %in% east_towns, "East",
                                  ifelse(hdb_cleaned$town_name %in% west_towns, "West",
@@ -51,11 +51,20 @@ hdb_cleaned$remaining_lease = as.numeric(hdb_cleaned$remaining_lease)
 # Check for skewness
 numeric_columns = names(hdb_cleaned)[sapply(hdb_cleaned, is.numeric)]
 
+# Log transform 'resale_price'
+hdb_cleaned$log_resale_price = log(hdb_cleaned$resale_price)
+# plot_hist_with_npdf(hdb_cleaned$log_resale_price, 'log_resale_price')
+# boxplot(hdb_cleaned$log_resale_price, main = paste("Histogram of", 'log_resale_price'), xlab = 'log_resale_price')
+# skewness(hdb_cleaned$log_resale_price)
+
+
+############################## Graph plotting ##############################
+
 # Histogram plotting function
-par(mfrow = c(2,4))
+par(mfrow = c(1,2))
 plot_hist_with_npdf = function(x, col_name) {
   hist_data = hist(hdb_cleaned[[col_name]], main = paste("Histogram of", col_name), xlab = col_name)
-  xpt = seq(min(x), max(x), length.out = 50)
+  xpt = seq(min(x), max(x), length.out = length(x))
   n_den = dnorm(xpt, mean(x), sd(x))
   
   # Calculate the histogram scale factor
@@ -64,6 +73,7 @@ plot_hist_with_npdf = function(x, col_name) {
   lines(xpt, ypt, col = "blue")
 }
 
+numeric_columns = names(hdb_cleaned)[sapply(hdb_cleaned, is.numeric)]
 
 for (col in numeric_columns) {
   print(paste("Skewness of", col, "=", skewness(hdb_cleaned[[col]])))
@@ -71,4 +81,33 @@ for (col in numeric_columns) {
   boxplot(hdb_cleaned[[col]], main = paste("Histogram of", col), xlab = col)
 }
 
-#test
+par(mfrow = c(1,1))
+
+category_count = table(hdb_cleaned$flat_type, hdb_cleaned$town_area)
+barplot(category_count, main ="Flat Type distribution by Town Area",
+        xlab = "Town", ylab = "Count", 
+        legend = rownames(category_count))
+
+
+
+############################## Removing outliers ##############################
+
+remove_outliers_iqr = function(df, column) {
+  Q1 = quantile(df[[column]], 0.25, na.rm = TRUE)
+  Q3 = quantile(df[[column]], 0.75, na.rm = TRUE)
+  IQR_value = Q3 - Q1
+  lower_bound = Q1 - 1.5 * IQR_value
+  upper_bound = Q3 + 1.5 * IQR_value
+  
+  df = df[df[[column]] >= lower_bound & df[[column]] <= upper_bound, ]
+  return(df)
+}
+
+numeric_columns = names(hdb_cleaned)[sapply(hdb_cleaned, is.numeric)]
+
+for (col in numeric_columns) {
+  hdb_cleaned = remove_outliers_iqr(hdb_cleaned, col)  
+}
+
+
+
