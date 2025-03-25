@@ -6,7 +6,8 @@ library(e1071)
 hdb = read.csv(file.choose(), header = TRUE)
 
 ############################# Data Cleaning ############################## 
-# Drop irrelevant columns
+# View the first few row and Drop irrelevant columns
+head(hdb)
 hdb_cleaned = subset(hdb, select = -c(id, block, street_name, lease_commence_date, flatm_name))
 
 # Extract year from 'month' column
@@ -70,3 +71,4 @@ for (col in numeric_columns) {
   plot_hist_with_npdf(hdb_cleaned[[col]], col)
   boxplot(hdb_cleaned[[col]], main = paste("Histogram of", col), xlab = col)
 }
+
