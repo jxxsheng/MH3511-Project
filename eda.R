@@ -5,7 +5,11 @@ library(e1071)
 # Import data set
 hdb = read.csv(file.choose(), header = TRUE)
 
-############################# Data Cleaning ############################## 
+############################# Data Cleaning ##############################
+
+# View the first few row and Drop irrelevant columns
+head(hdb)
+
 # Drop irrelevant columns
 hdb_cleaned = subset(hdb, select = -c(id, block, street_name, lease_commence_date, flatm_name))
 
