@@ -53,10 +53,29 @@ numeric_columns = names(hdb_cleaned)[sapply(hdb_cleaned, is.numeric)]
 
 # Log transform 'resale_price'
 hdb_cleaned$log_resale_price = log(hdb_cleaned$resale_price)
-# plot_hist_with_npdf(hdb_cleaned$log_resale_price, 'log_resale_price')
-# boxplot(hdb_cleaned$log_resale_price, main = paste("Histogram of", 'log_resale_price'), xlab = 'log_resale_price')
-# skewness(hdb_cleaned$log_resale_price)
 
+
+############################## Removing outliers ##############################
+
+# Remove outlier function using IQR method
+remove_outliers_iqr = function(df, column) {
+  Q1 = quantile(df[[column]], 0.25, na.rm = TRUE)
+  Q3 = quantile(df[[column]], 0.75, na.rm = TRUE)
+  IQR_value = Q3 - Q1
+  lower_bound = Q1 - 1.5 * IQR_value
+  upper_bound = Q3 + 1.5 * IQR_value
+  
+  df = df[df[[column]] >= lower_bound & df[[column]] <= upper_bound, ]
+  return(df)
+}
+
+numeric_columns = names(hdb_cleaned)[sapply(hdb_cleaned, is.numeric)]
+
+for (col in numeric_columns) {
+  if (col != "resale_price") {
+    hdb_cleaned = remove_outliers_iqr(hdb_cleaned, col)  
+  }
+}
 
 ############################## Graph plotting ##############################
 
@@ -81,6 +100,7 @@ for (col in numeric_columns) {
   boxplot(hdb_cleaned[[col]], main = paste("Histogram of", col), xlab = col)
 }
 
+# Plot Flat Type distribution by Town Area
 par(mfrow = c(1,1))
 
 category_count = table(hdb_cleaned$flat_type, hdb_cleaned$town_area)
@@ -89,25 +109,6 @@ barplot(category_count, main ="Flat Type distribution by Town Area",
         legend = rownames(category_count))
 
 
-
-############################## Removing outliers ##############################
-
-remove_outliers_iqr = function(df, column) {
-  Q1 = quantile(df[[column]], 0.25, na.rm = TRUE)
-  Q3 = quantile(df[[column]], 0.75, na.rm = TRUE)
-  IQR_value = Q3 - Q1
-  lower_bound = Q1 - 1.5 * IQR_value
-  upper_bound = Q3 + 1.5 * IQR_value
-  
-  df = df[df[[column]] >= lower_bound & df[[column]] <= upper_bound, ]
-  return(df)
-}
-
-numeric_columns = names(hdb_cleaned)[sapply(hdb_cleaned, is.numeric)]
-
-for (col in numeric_columns) {
-  hdb_cleaned = remove_outliers_iqr(hdb_cleaned, col)  
-}
 
 
 
