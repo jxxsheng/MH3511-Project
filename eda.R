@@ -55,6 +55,7 @@ hdb_cleaned$remaining_lease = as.numeric(hdb_cleaned$remaining_lease)
 
 # Check for skewness
 numeric_columns = names(hdb_cleaned)[sapply(hdb_cleaned, is.numeric)]
+numeric_columns
 
 hist(hdb_cleaned$resale_price)
 
@@ -155,7 +156,7 @@ barplot(category_count, main ="Flat Type distribution by Town Area",
 
 flat_type_vs_area = table(hdb_cleaned$flat_type,hdb_cleaned$town_area)
 flat_type_vs_area
-barplot(flat_type_vs_area, beside = T)
+barplot(flat_type_vs_area, beside = T, legend.text = T)
 
 #formatted data
 colsum_area = matrix(colSums(flat_type_vs_area),nrow = 1)
@@ -165,7 +166,8 @@ flat_type_vs_area_formatted
 chisq.test(flat_type_vs_area)
 #p-value <0.05, we reject H0, there is association between flat_type and town_area
 
-#do anova test first, then if there is no diff for mean  across town area, then we will say it might be other factor from linear regression
+
+
 
 str(hdb_cleaned)
 central_floor_area = subset(hdb_cleaned[,c("floor_area_sqm","town_area","flat_type")], hdb_cleaned$town_area == 'Central' & hdb_cleaned$flat_type == "3 ROOM")
@@ -173,4 +175,86 @@ east_floor_area = subset(hdb_cleaned[,c("floor_area_sqm","town_area","flat_type"
 mean(central_floor_area$floor_area_sqm)
 mean(east_floor_area$floor_area_sqm)
 
+#do anova test first, then if there is no diff for mean  across town area, then we will say it might be other factor from linear regression
+flat_type_vs_area
+central_area = data.frame(area = c(hdb_cleaned$floor_area_sqm[hdb_cleaned$town_area == 'Central' & hdb_cleaned$flat_type == '3 ROOM']), town_area = 'Central')
+east_area = data.frame(area = c(hdb_cleaned$floor_area_sqm[hdb_cleaned$town_area == 'East' & hdb_cleaned$flat_type == '3 ROOM']), town_area = 'East')
+north_area = data.frame(area = c(hdb_cleaned$floor_area_sqm[hdb_cleaned$town_area == 'North' & hdb_cleaned$flat_type == '3 ROOM']), town_area = 'North')
+south_area = data.frame(area = c(hdb_cleaned$floor_area_sqm[hdb_cleaned$town_area == 'South' & hdb_cleaned$flat_type == '3 ROOM']), town_area = 'South')
+west_area = data.frame(area = c(hdb_cleaned$floor_area_sqm[hdb_cleaned$town_area == 'West' & hdb_cleaned$flat_type == '3 ROOM']), town_area = 'West')
+merged_roomSize_townArea = rbind(central_area, east_area, north_area, south_area,west_area)
+##Code to verify if the merging is correct
+length(merged_roomSize_townArea$town_area[merged_roomSize_townArea$town_area=='Central'])
+length(merged_roomSize_townArea$town_area[merged_roomSize_townArea$town_area=='East'])
+length(merged_roomSize_townArea$town_area[merged_roomSize_townArea$town_area=='North'])
+length(merged_roomSize_townArea$town_area[merged_roomSize_townArea$town_area=='South'])
+length(merged_roomSize_townArea$town_area[merged_roomSize_townArea$town_area=='West'])
+anova = aov(merged_roomSize_townArea$area~factor(merged_roomSize_townArea$town_area))
+summary(anova)
+##we find that p-value < 0.05. Thus, we reject H0:m1=m2=m3=m4=m5. We conclude that
+##not all the mean are same, that's, mi != mj for some i and j
+pairwise.t.test(merged_roomSize_townArea$area,merged_roomSize_townArea$town_area, p.adjust.method = 'none')
+mean(west_area$area)
+mean(north_area$area)
+mean(central_area$area)
+mean(east_area$area)
+mean(south_area$area)
+
+##try anova on resale price
+town_area = c('Central','East','North','South','West')
+central_resale = data.frame(resale_price = c(hdb_cleaned$resale_price[hdb_cleaned$town_area == 'Central'& hdb_cleaned$flat_type == '3 ROOM']), town_area = 'Central')
+east_resale = data.frame(resale_price = c(hdb_cleaned$resale_price[hdb_cleaned$town_area == 'East'& hdb_cleaned$flat_type == '3 ROOM']), town_area = 'East')
+north_resale = data.frame(resale_price = c(hdb_cleaned$resale_price[hdb_cleaned$town_area == 'North'& hdb_cleaned$flat_type == '3 ROOM']), town_area = 'North')
+south_resale = data.frame(resale_price = c(hdb_cleaned$resale_price[hdb_cleaned$town_area == 'South'& hdb_cleaned$flat_type == '3 ROOM']), town_area = 'South')
+west_resale = data.frame(resale_price = c(hdb_cleaned$resale_price[hdb_cleaned$town_area == 'West'& hdb_cleaned$flat_type == '3 ROOM']), town_area = 'West')
+merged_resalePrice_area = rbind(central_resale, east_resale, north_resale, south_resale,west_resale)
+anova_resale = aov(merged_resalePrice_area$resale_price~factor(merged_resalePrice_area$town_area))
+summary(anova_resale)
+pairwise.t.test(merged_resalePrice_area$resale_price,merged_resalePrice_area$town_area,p.adjust.method = 'none')
+
+mean3_central = mean(central_resale$resale_price)
+mean3_east = mean(east_resale$resale_price)
+mean3_north = mean(north_resale$resale_price)
+mean3_south = mean(south_resale$resale_price)
+mean3_west = mean(west_resale$resale_price)
+boxplot(merged_resalePrice_area$resale_price~merged_resalePrice_area$town_area, main = '3 room type vs Town Area')
+
+
+
+central_resale_4 = data.frame(resale_price = c(hdb_cleaned$resale_price[hdb_cleaned$town_area == 'Central'& hdb_cleaned$flat_type == '4 ROOM']), town_area = 'Central')
+east_resale_4 = data.frame(resale_price = c(hdb_cleaned$resale_price[hdb_cleaned$town_area == 'East'& hdb_cleaned$flat_type == '4 ROOM']), town_area = 'East')
+north_resale_4 = data.frame(resale_price = c(hdb_cleaned$resale_price[hdb_cleaned$town_area == 'North'& hdb_cleaned$flat_type == '4 ROOM']), town_area = 'North')
+south_resale_4 = data.frame(resale_price = c(hdb_cleaned$resale_price[hdb_cleaned$town_area == 'South'& hdb_cleaned$flat_type == '4 ROOM']), town_area = 'South')
+west_resale_4 = data.frame(resale_price = c(hdb_cleaned$resale_price[hdb_cleaned$town_area == 'West'& hdb_cleaned$flat_type == '4 ROOM']), town_area = 'West')
+merged_resalePrice_area_4 = rbind(central_resale_4, east_resale_4, north_resale_4, south_resale_4,west_resale_4)
+anova_resale_4 = aov(merged_resalePrice_area_4$resale_price~factor(merged_resalePrice_area_4$town_area))
+summary(anova_resale_4)
+
+mean4_central = mean(central_resale_4$resale_price)
+mean4_east = mean(east_resale_4$resale_price)
+mean4_north = mean(north_resale_4$resale_price)
+mean4_south = mean(south_resale_4$resale_price)
+mean4_west = mean(west_resale_4$resale_price)
+boxplot(merged_resalePrice_area_4$resale_price~merged_resalePrice_area_4$town_area,main = '4 room type vs Town Area')
+par(mfrow=c(1,2))
+
+price_increase_central =  (mean4_central-mean3_central)
+price_increase_east = (mean4_east- mean3_east)
+price_increase_north = (mean4_north- mean3_north)
+price_increase_south = (mean4_south - mean3_south)
+price_increase_west = (mean4_west- mean3_west)
+price_increase_area = rbind(price_increase_central,price_increase_east,price_increase_north,price_increase_south,price_increase_west)                                          
+colnames(price_increase_area) = 'Price Increase'
+
+price_increase_area = data.frame(price_increase = c(price_increase_central,price_increase_east,price_increase_north,price_increase_south,price_increase_west), town_area)
+price_increase_area
+
+barplot(
+  price_increase_area$price_increase,
+  names.arg = price_increase_area$town_area,
+  main = "Price Increase by Town Area",
+  xlab = "Town Area",
+  ylab = "Price Increase",
+  col = "skyblue"
+)
 
