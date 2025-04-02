@@ -20,6 +20,7 @@ hdb_cleaned = subset(hdb_cleaned, select = -month)
 # Extract years from remaining lease
 hdb_cleaned$remaining_lease = substr(hdb_cleaned$remaining_lease, 1, 2)
 
+hdb_cleaned
 
 ############################## Town area grouping ############################## 
 unique(hdb_cleaned$town_name)
@@ -55,9 +56,14 @@ hdb_cleaned$remaining_lease = as.numeric(hdb_cleaned$remaining_lease)
 # Check for skewness
 numeric_columns = names(hdb_cleaned)[sapply(hdb_cleaned, is.numeric)]
 
+hist(hdb_cleaned$resale_price)
+
 # Log transform 'resale_price'
 hdb_cleaned$log_resale_price = log(hdb_cleaned$resale_price)
 
+#check hist and boxplot after log transform
+hist(hdb_cleaned$log_resale_price)
+boxplot(hdb_cleaned$log_resale_price)
 
 ############################## Removing outliers ##############################
 
@@ -81,10 +87,14 @@ for (col in numeric_columns) {
   }
 }
 
+boxplot(hdb_cleaned$log_resale_price)
+
 ############################## Graph plotting ##############################
 
 # Histogram plotting function
 par(mfrow = c(1,2))
+
+#check normality using graph drawing method
 plot_hist_with_npdf = function(x, col_name) {
   hist_data = hist(hdb_cleaned[[col_name]], main = paste("Histogram of", col_name), xlab = col_name)
   xpt = seq(min(x), max(x), length.out = length(x))
@@ -112,7 +122,55 @@ barplot(category_count, main ="Flat Type distribution by Town Area",
         xlab = "Town", ylab = "Count", 
         legend = rownames(category_count))
 
+#####################################Data Analysis######################################
 
 
+# #Which flat types are more popular for each town area/year(2 way contingency table)
+# town_area = unique(hdb_cleaned$town_area)
+# year = sort(unique(hdb_cleaned$year), decreasing = FALSE)
+# year
+# 
+# #form a matrix for both variable
+# contingency_table = table(hdb_cleaned$town_area, hdb_cleaned$year)
+# contingency_table
+# rowsum = matrix(rowSums(contingency_table), nrow = 5)
+# colsum = matrix(colSums(contingency_table), nrow = 1)
+# ex_area = rowsum %*% colsum / sum(rowsum)
+# area_chisq = sum((contingency_table-ex_area)^2/ex_area)
+# area_chisq
+# dof_area = 16
+# pvalue_area = 1-pchisq(area_chisq, dof_area)
+# pvalue_area
+# #since p-value = 4.761747e-13 < 0.05, we reject H0
+# #Alternatively
+# chisq.test(contingency_table)
+# #since we have known there is relationship between year and area, we need to know the distribution
+# barplot(contingency_table, beside=T)
+# 
+# #form the barplot we see that the sale in 2019 is significantly different and it might due to covid-19. So we drop the 2019 and check the association again
+# contingency_table_cleaned = contingency_table[,1:4]
+# contingency_table_cleaned
+# chisq.test(contingency_table_cleaned)
+# #p-value is 0.001 which is still < 0.05 so H0 is still rejected
+
+flat_type_vs_area = table(hdb_cleaned$flat_type,hdb_cleaned$town_area)
+flat_type_vs_area
+barplot(flat_type_vs_area, beside = T)
+
+#formatted data
+colsum_area = matrix(colSums(flat_type_vs_area),nrow = 1)
+rowsum_area = matrix(c(rep(1,7)), nrow = 7)
+flat_type_vs_area_formatted = round(flat_type_vs_area * 100/ (rowsum_area%*%colsum_area),2)
+flat_type_vs_area_formatted
+chisq.test(flat_type_vs_area)
+#p-value <0.05, we reject H0, there is association between flat_type and town_area
+
+#do anova test first, then if there is no diff for mean  across town area, then we will say it might be other factor from linear regression
+
+str(hdb_cleaned)
+central_floor_area = subset(hdb_cleaned[,c("floor_area_sqm","town_area","flat_type")], hdb_cleaned$town_area == 'Central' & hdb_cleaned$flat_type == "3 ROOM")
+east_floor_area = subset(hdb_cleaned[,c("floor_area_sqm","town_area","flat_type")], hdb_cleaned$town_area == 'East' & hdb_cleaned$flat_type == "3 ROOM")
+mean(central_floor_area$floor_area_sqm)
+mean(east_floor_area$floor_area_sqm)
 
 
