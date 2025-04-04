@@ -258,3 +258,16 @@ barplot(
   col = "skyblue"
 )
 
+##########################Linear regression################
+# Convert categorical variables to factors
+hdb_cleaned$flat_type.factor    <- factor(hdb_cleaned$flat_type)
+hdb_cleaned$storey_range.factor <- factor(hdb_cleaned$storey_range)
+hdb_cleaned$town_area.factor    <- factor(hdb_cleaned$town_area)
+
+# Build the linear regression model
+# Here we use floor_area_sqm, remaining_lease, year, flat_type, storey_range, and town_area as predictors
+model <- lm(log_resale_price ~ floor_area_sqm + remaining_lease + year +
+              flat_type.factor + storey_range.factor + town_area.factor, data = hdb_cleaned)
+
+# Print the summary of the model to review coefficients and statistics
+summary(model)
