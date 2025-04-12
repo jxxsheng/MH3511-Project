@@ -122,9 +122,7 @@ for (col in numeric_columns) {
 par(mfrow = c(1,1))
 
 category_count = table(hdb_cleaned$flat_type, hdb_cleaned$town_area)
-barplot(category_count, main ="Flat Type distribution by Town Area",
-        xlab = "Town", ylab = "Count", beside = TRUE,
-        legend = rownames(category_count))
+
 
 #####################################Data Analysis######################################
 
@@ -159,7 +157,9 @@ barplot(category_count, main ="Flat Type distribution by Town Area",
 
 flat_type_vs_area = table(hdb_cleaned$flat_type,hdb_cleaned$town_area)
 flat_type_vs_area
-barplot(flat_type_vs_area, beside = T, legend.text = T)
+barplot(category_count, main ="Flat Type distribution by Town Area",
+        xlab = "Town", ylab = "Count", beside = TRUE,
+        legend = rownames(category_count))
 
 #formatted data
 colsum_area = matrix(colSums(flat_type_vs_area),nrow = 1)
