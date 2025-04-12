@@ -8,6 +8,7 @@ hdb = read.csv(file.choose(), header = TRUE)
 ############################# Data Cleaning ##############################
 
 # View the first few row and Drop irrelevant columns
+str(hdb)
 head(hdb)
 
 # Drop irrelevant columns
@@ -42,6 +43,8 @@ hdb_cleaned$town_area = ifelse(hdb_cleaned$town_name %in% north_towns, "North",
                                  ifelse(hdb_cleaned$town_name %in% west_towns, "West",
                                         ifelse(hdb_cleaned$town_name %in% central_towns, "Central", "Unknown")))))
 
+# Remove duplicate rows
+hdb_cleaned <- hdb_cleaned[!duplicated(hdb_cleaned), ]
 
 ############################## Check skewness for numerical columns ######################################
 # Check for abnormal values
@@ -120,7 +123,7 @@ par(mfrow = c(1,1))
 
 category_count = table(hdb_cleaned$flat_type, hdb_cleaned$town_area)
 barplot(category_count, main ="Flat Type distribution by Town Area",
-        xlab = "Town", ylab = "Count", 
+        xlab = "Town", ylab = "Count", beside = TRUE,
         legend = rownames(category_count))
 
 #####################################Data Analysis######################################
@@ -199,6 +202,17 @@ mean(north_area$area)
 mean(central_area$area)
 mean(east_area$area)
 mean(south_area$area)
+boxplot(merged_roomSize_townArea$area~merged_roomSize_townArea$town_area, main = '3 room type area vs Town Area')
+boxplot(merged_roomSize_townArea$area[merged_roomSize_townArea$town_area == 'Central'], main='3 room area at central')
+summary(merged_roomSize_townArea$area[merged_roomSize_townArea$town_area == 'Central'])
+IQR(merged_roomSize_townArea$area[merged_roomSize_townArea$town_area == 'Central'])
+
+#########trying to remove the outlier of 3 room area for each individual town area
+#code here
+
+
+
+
 
 ##try anova on resale price
 town_area = c('Central','East','North','South','West')
@@ -267,7 +281,7 @@ hdb_cleaned$town_area.factor    <- factor(hdb_cleaned$town_area)
 # Build the linear regression model
 # Here we use floor_area_sqm, remaining_lease, year, flat_type, storey_range, and town_area as predictors
 model <- lm(log_resale_price ~ floor_area_sqm + remaining_lease + year +
-              flat_type.factor + storey_range.factor + town_area.factor, data = hdb_cleaned)
+              flat_type.factor + town_area.factor, data = hdb_cleaned)
 
 # Print the summary of the model to review coefficients and statistics
 summary(model)
