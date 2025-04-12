@@ -161,6 +161,8 @@ barplot(category_count, main ="Flat Type distribution by Town Area",
         xlab = "Town", ylab = "Count", beside = TRUE,
         legend = rownames(category_count))
 
+
+
 #formatted data
 colsum_area = matrix(colSums(flat_type_vs_area),nrow = 1)
 rowsum_area = matrix(c(rep(1,7)), nrow = 7)
@@ -170,6 +172,13 @@ chisq.test(flat_type_vs_area)
 #p-value <0.05, we reject H0, there is association between flat_type and town_area
 
 
+
+
+
+##trying to plot in boxplot to check if there is outlier
+str(merged_roomSize_townArea)
+boxplot(merged_roomSize_townArea$area~merged_roomSize_townArea$town_area, main = '3 room type area vs Town Area')
+str(hdb_cleaned)
 
 
 str(hdb_cleaned)
@@ -186,6 +195,11 @@ north_area = data.frame(area = c(hdb_cleaned$floor_area_sqm[hdb_cleaned$town_are
 south_area = data.frame(area = c(hdb_cleaned$floor_area_sqm[hdb_cleaned$town_area == 'South' & hdb_cleaned$flat_type == '3 ROOM']), town_area = 'South')
 west_area = data.frame(area = c(hdb_cleaned$floor_area_sqm[hdb_cleaned$town_area == 'West' & hdb_cleaned$flat_type == '3 ROOM']), town_area = 'West')
 merged_roomSize_townArea = rbind(central_area, east_area, north_area, south_area,west_area)
+merged_roomSize_townArea
+
+
+
+
 ##Code to verify if the merging is correct
 length(merged_roomSize_townArea$town_area[merged_roomSize_townArea$town_area=='Central'])
 length(merged_roomSize_townArea$town_area[merged_roomSize_townArea$town_area=='East'])
@@ -202,14 +216,6 @@ mean(north_area$area)
 mean(central_area$area)
 mean(east_area$area)
 mean(south_area$area)
-boxplot(merged_roomSize_townArea$area~merged_roomSize_townArea$town_area, main = '3 room type area vs Town Area')
-boxplot(merged_roomSize_townArea$area[merged_roomSize_townArea$town_area == 'Central'], main='3 room area at central')
-summary(merged_roomSize_townArea$area[merged_roomSize_townArea$town_area == 'Central'])
-IQR(merged_roomSize_townArea$area[merged_roomSize_townArea$town_area == 'Central'])
-
-#########trying to remove the outlier of 3 room area for each individual town area
-#code here
-
 
 
 
@@ -280,8 +286,22 @@ hdb_cleaned$town_area.factor    <- factor(hdb_cleaned$town_area)
 
 # Build the linear regression model
 # Here we use floor_area_sqm, remaining_lease, year, flat_type, storey_range, and town_area as predictors
-model <- lm(log_resale_price ~ floor_area_sqm + remaining_lease + year +
+model1 <- lm(log_resale_price ~ floor_area_sqm + remaining_lease + year +
               flat_type.factor + town_area.factor, data = hdb_cleaned)
 
 # Print the summary of the model to review coefficients and statistics
-summary(model)
+summary(model1)
+
+#try to find out the single most important facotr that is affecting the resale price
+#resale price and floor area
+model2 <- lm(log_resale_price ~ floor_area_sqm, data = hdb_cleaned)
+summary(model2)
+
+#resale price and remaining lease
+model3 <- lm(log_resale_price ~ remaining_lease, data = hdb_cleaned)
+summary(model3)
+
+#resale price and year
+model4 <- lm(log_resale_price ~ year ,data = hdb_cleaned)
+summary(model4)
+
