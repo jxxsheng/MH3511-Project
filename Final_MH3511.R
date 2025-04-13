@@ -482,14 +482,3 @@ art_model <- art(resale_price ~ flat_type * town_area, data = valid_combinations
 anova(art_model)
 
 
-
-
-
-
-
-levels(valid_combinations$flat_type)
-levels(valid_combinations$town_area)
-
-# Fit ART model
-art_model <- art(resale_price ~ flat_type * town_area, data = valid_combinations)
-anova(art_model)
