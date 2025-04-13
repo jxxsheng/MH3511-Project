@@ -212,32 +212,33 @@ barplot(category_count,
 
 
 #####################################Data Analysis######################################
-##########################Correlation Heatmap################
-# Correlation Heatmap
-hdb_subset = hdb_cleaned[, -c(2,6)]  # Drop storey and town name
+##########################scatter plot################
+# Select only numeric columns
+# Start with a clean subset
+hdb_subset <- hdb_cleaned  # Drop storey and town name
+
+# Convert flat_type and town_area to numeric (ordered or not)
 hdb_subset$flat_type <- factor(hdb_cleaned$flat_type,
                                levels = c("1 ROOM", "2 ROOM", "3 ROOM", "4 ROOM", 
                                           "5 ROOM", "EXECUTIVE", "MULTI-GENERATION"),
                                ordered = TRUE)
+
 hdb_subset$town_area <- factor(hdb_cleaned$town_area,
                                levels = c("East", "West", "Central", "South", "North"),
                                ordered = FALSE)
+
+# Convert to numeric for correlation
 hdb_subset$flat_type <- as.numeric(hdb_subset$flat_type)
 hdb_subset$town_area <- as.numeric(hdb_subset$town_area)
 
+# Keep only numeric columns
+numeric_cols <- sapply(hdb_subset, is.numeric)
+hdb_numeric <- hdb_subset[, numeric_cols]
 
-cor_matrix = cor(hdb_subset)
-par(mfrow = c(1,1))
-
-# Normal red/blue colour heatmap
-heatmap(cor_matrix,
-        col = colorRampPalette(c("blue", "white", "red"))(100),
-        scale = "none",  
-        margins = c(7, 7)) 
 
 # Scatterplot matrix sample(1000)
 set.seed(123)  # For reproducibility
-sampled_data <- hdb_subset[sample(nrow(hdb_subset), 1000), ]
+sampled_data <- hdb_numeric[sample(nrow(hdb_numeric), 1000), ]
 pairs(sampled_data, main = "Scatterplot Matrix of HDB Data")
 
 ##########################Linear regression################
