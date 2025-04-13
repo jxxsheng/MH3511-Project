@@ -436,16 +436,19 @@ barplot(
   col = "#CDE6F9",
 )
 ###################Test if price difference across flat types vary#############
-# Test if it fits the ANOVA assumptions 
-leveneTest(resale_price ~ flat_type, data = hdb_cleaned)
+
 # Ensure variables are factors
 hdb_cleaned$flat_type <- factor(hdb_cleaned$flat_type)
 hdb_cleaned$town_area <- factor(hdb_cleaned$town_area)
 
+# Combine flat_type and town_area into a single group
+hdb_cleaned$group_combo <- interaction(hdb_cleaned$flat_type, hdb_cleaned$town_area)
+
+# Perform Levene's Test on resale price (or log_resale_price)
+leveneTest(log_resale_price ~ group_combo, data = hdb_cleaned)
+
 # model wont run if the interacted values dont exist
 table(hdb_cleaned$flat_type, hdb_cleaned$town_area)
-
-
 
 # Remove rare flat types BEFORE filtering
 cleaned_subset <- hdb_cleaned %>%
@@ -460,6 +463,19 @@ valid_combinations <- cleaned_subset %>%
     flat_type = droplevels(flat_type),
     town_area = droplevels(town_area)
   )
+
+
+levels(valid_combinations$flat_type)
+levels(valid_combinations$town_area)
+
+# Fit ART model
+art_model <- art(resale_price ~ flat_type * town_area, data = valid_combinations)
+anova(art_model)
+
+
+
+
+
 
 
 levels(valid_combinations$flat_type)
