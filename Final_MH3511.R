@@ -6,7 +6,9 @@ library(car)
 install.packages("ARTool")
 library(ARTool)
 library(dplyr)
-
+#visualization, interpret by observing the gradient
+install.packages("ggplot2")
+library(ggplot2)
 
 # Import data set
 hdb = read.csv(file.choose(), header = TRUE)
@@ -435,6 +437,13 @@ barplot(
   ylab = "Price Increase",
   col = "#CDE6F9",
 )
+
+
+ggplot(hdb_cleaned, aes(x = flat_type, y = resale_price, color = town_area, group = town_area)) +
+  stat_summary(fun = median, geom = "line") +
+  labs(title = "Interaction Plot:Medium Resale Price by Flat Type and Town Area")
+
+
 ###################Test if price difference across flat types vary#############
 
 # Ensure variables are factors
